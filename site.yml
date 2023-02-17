@@ -25,6 +25,7 @@
   hosts: mysql
   vars_files:
     - "vars/all.yml"
+    - vars/secrets.yml
   tags: mysql
   roles: 
     - mysql
