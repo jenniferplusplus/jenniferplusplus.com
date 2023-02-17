@@ -4,23 +4,31 @@
     name: mysql
     state: started
 
-- name: root user password
+- name: set root user password
   become: true
   community.mysql.mysql_user:
     name: root
     password: "{{mysql_root_pw}}"
     login_unix_socket: /var/run/mysqld/mysqld.sock
-    login_password: "{{mysql_root_pw}}"
     check_implicit_admin: yes
   notify: restart mysql
 
-- name: ansible user cnf
+# Ansible will connect to mysql and perform actions with these credentials in future steps
+- name: set default credentials for ansible
   ansible.builtin.template:
     src: files/my.cnf.j2
     dest: /home/ansible/.my.cnf
     mode: 0660
     owner: ansible
-  notify: restart mysql
+
+# Also allow root to connect to mysql with the same credentials, to enable rotating secrets
+- name: set default credentials for root
+  become: true
+  ansible.builtin.template:
+    src: files/my.cnf.j2
+    dest: /root/.my.cnf
+    mode: 0600
+    owner: root
 
 - name: add mysql user for ghost
   community.mysql.mysql_user:
