@@ -1,0 +1,17 @@
+- name: "create ansible user"
+  ansible.builtin.user:
+    name: ansible
+    group: root
+    groups: www-data
+    append: yes
+- name: "make ansible sudoer"
+  ansible.builtin.copy:
+    src: sudoer_ansible
+    dest: /etc/sudoers.d/ansible
+    owner: root
+    group: root
+    mode: 0440
+- name: "add ansible ssh key"
+  authorized_key:
+    user: ansible
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID9SHWQ//NpqC2W4y/lmiYKAawvbww68nSu9a/y9NM4q ansible"

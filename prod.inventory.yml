@@ -1,0 +1,15 @@
+all:
+  hosts:
+    blog:
+      hosts:
+        jenniferplusplus.com:
+    mysql:
+      hosts:
+        jenniferplusplus.com:
+    web:
+      vars:
+        use_ssl: yes
+        site_url: "https://jenniferplusplus.com"
+        nginx_server_name: "jenniferplusplus.com"
+      hosts:
+        jenniferplusplus.com:

@@ -1,0 +1,37 @@
+---
+- name: Bootstrap and update hosts
+  hosts: all
+  vars_files:
+    - "vars/all.yml"
+  tags: bootstrap
+  roles: 
+    - bootstrap
+    - common
+- name: System updates
+  hosts: all
+  vars_files:
+    - "vars/all.yml"
+  tags: update
+  roles:
+    - common
+- name: Configure Web servers
+  hosts: web
+  vars_files:
+    - "vars/all.yml"
+  tags: web
+  roles: 
+    - web
+- name: Configure MySql servers
+  hosts: mysql
+  vars_files:
+    - "vars/all.yml"
+  tags: mysql
+  roles: 
+    - mysql
+- name: Configure blog servers
+  hosts: blog
+  vars_files:
+    - "vars/all.yml"
+  tags: blog
+  roles: 
+    - blog

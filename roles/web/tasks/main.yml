@@ -1,0 +1,63 @@
+- name: install services
+  become: true
+  apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: latest
+
+- name: copy ghost site config w/ssl
+  become: true
+  when: use_ssl == true
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
+    src: files/sites-available.ghost.conf.j2
+    mode: 0644
+
+- name: copy ghost site config WITHOUT ssl
+  become: true
+  when: use_ssl == false
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
+    src: files/sites-available.ghost.no-ssl.conf.j2
+    mode: 0644
+
+- name: enable ghost site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{inventory_hostname}}.conf
+    dest: /etc/nginx/sites-enabled/{{site_name}}.conf
+    state: link
+  register: enable_ghost
+  notify: 
+    - restart nginx
+
+- name: register certbot
+  become: true
+  when: use_ssl == true
+  ansible.builtin.shell: |
+    certbot -n register --agree_tos --email {{admin_email}}
+    touch /etc/letsencrypt/.registered
+  args:
+    creates: /etc/letsencrypt/.registered
+
+- name: 'get certificate'
+  become: true
+  when: use_ssl == true
+  command: 'certbot -n --nginx --keep certonly -d {{ nginx_server_name }}'
+  args:
+    creates: '/etc/letsencrypt/live/{{ nginx_server_name }}'
+  ignore_errors: true
+  notify: 
+    - restart nginx
+
+- name: 'get certificate (dry run)'
+  become: true
+  when: use_ssl == false
+  command: 'certbot -n --nginx --keep --dry-run certonly -d {{ nginx_server_name }}'
+  args:
+    creates: '/etc/letsencrypt/live/{{ nginx_server_name }}'
+  ignore_errors: true
+  notify: 
+    - restart nginx

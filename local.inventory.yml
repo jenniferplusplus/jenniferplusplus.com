@@ -1,0 +1,15 @@
+all:
+  children:
+    blog:
+      hosts:
+        "192.168.1.102":
+    mysql:
+      hosts:
+        "192.168.1.102":
+    web:
+      vars:
+        use_ssl: no
+        site_url: "http://192.168.1.102"
+        nginx_server_name: "192.168.1.102"
+      hosts:
+        "192.168.1.102":
