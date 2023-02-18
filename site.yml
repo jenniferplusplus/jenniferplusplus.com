@@ -1,4 +1,5 @@
 ---
+
 - name: Bootstrap and update hosts
   hosts: all
   vars_files:
@@ -33,6 +34,7 @@
   hosts: blog
   vars_files:
     - "vars/all.yml"
+    - vars/secrets.yml
   tags: blog
   roles: 
     - blog

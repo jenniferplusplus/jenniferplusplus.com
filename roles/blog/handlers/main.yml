@@ -1,0 +1,11 @@
+- name: restart ghost
+  become: true
+  ansible.builtin.service:
+    name: ghost_{{site_name}}
+    state: restarted
+
+- name: restart nginx
+  become: true
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
