@@ -37,4 +37,5 @@
     - vars/secrets.yml
   tags: blog
   roles: 
+    - node
     - blog
