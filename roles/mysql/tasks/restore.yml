@@ -1,0 +1,15 @@
+- name: copy backup file
+  ansible.builtin.copy:
+    src: backup/{{site_name}}_prod.restore.gz
+    dest: "/home/ansible/{{site_name}}_prod.restore.gz"
+
+- name: db restore from backup
+  community.mysql.mysql_db:
+    name: "{{site_name}}_prod"
+    state: import
+    target: "/home/ansible/{{site_name}}_prod.gz"
+
+- name: cleanup
+  ansible.builtin.file:
+    src: "/home/ansible/{{site_name}}_prod.restore.gz"
+    state: absent

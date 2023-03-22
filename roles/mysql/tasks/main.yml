@@ -1,3 +1,12 @@
+- name: install mysql utilities
+  become: true
+  apt:
+    name:
+      - mysql-server
+      - certbot
+      - python3-certbot-nginx
+    state: latest
+
 - name: start Mysql
   become: true
   ansible.builtin.service:
@@ -34,5 +43,18 @@
   community.mysql.mysql_user:
     name: ghost
     password: "{{mysql_ghost_pw}}"
-    priv: 'jenniferplusplus_prod.*:ALL'
+    priv: "{{site_name}}_prod.*:ALL"
+  notify: restart mysql
+
+- name: take backup
+  include: backup.yml
+  tags:
+    - backup
+    - never
+
+- name: restore from backup
+  include: restore.yml
+  tags:
+    - restore
+    - never
   notify: restart mysql
