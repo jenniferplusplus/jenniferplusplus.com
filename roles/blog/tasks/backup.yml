@@ -1,0 +1,15 @@
+- name: backup ghost assets
+  ansible.builtin.archive:
+    path: /var/www/{{site_name}}/content
+    dest: /home/ansible/{{site_name}}.content.zip
+    format: zip
+
+- name: export backup
+  ansible.builtin.fetch:
+    dest: './backup'
+    src: '/home/ansible/{{site_name}}.content.zip'
+
+- name: cleanup
+  ansible.builtin.file:
+    path: '/home/ansible/{{site_name}}.content.zip'
+    state: absent

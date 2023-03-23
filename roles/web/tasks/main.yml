@@ -35,27 +35,21 @@
 
 - name: register certbot
   become: true
-  when: use_ssl == true
-  ansible.builtin.shell: |
-    certbot -n register --agree_tos --email {{admin_email}}
-    touch /etc/letsencrypt/.registered
+  ansible.builtin.command: 
+    argv: 
+      - certbot 
+      - register 
+      - -n 
+      - --agree-tos 
+      - --email 
+      - "{{admin_email}}"
   args:
-    creates: /etc/letsencrypt/.registered
+    creates: /etc/letsencrypt/accounts
 
 - name: 'get certificate'
   become: true
   when: use_ssl == true
-  command: 'certbot -n --nginx --keep certonly -d {{ nginx_server_name }}'
-  args:
-    creates: '/etc/letsencrypt/live/{{ nginx_server_name }}'
-  ignore_errors: true
-  notify: 
-    - restart nginx
-
-- name: 'get certificate (dry run)'
-  become: true
-  when: use_ssl == false
-  command: 'certbot -n --nginx --keep --dry-run certonly -d {{ nginx_server_name }}'
+  command: 'certbot certonly -n --nginx --keep -d {{ nginx_server_name }}'
   args:
     creates: '/etc/letsencrypt/live/{{ nginx_server_name }}'
   ignore_errors: true

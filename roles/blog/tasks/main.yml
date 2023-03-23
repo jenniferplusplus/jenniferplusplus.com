@@ -88,3 +88,15 @@
   ansible.builtin.service:
     name: ghost_{{site_name}}
     state: started
+
+- name: take backup
+  include: backup.yml
+  tags:
+    - backup
+    - never
+
+- name: restore from backup
+  include: restore.yml
+  tags:
+    - restore
+    - never

@@ -3,3 +3,11 @@
   apt:
     update_cache: yes
     upgrade: "yes"
+
+- name: install common utilities
+  become: true
+  apt:
+    name:
+      - zip
+      - unzip
+    state: latest

@@ -2,17 +2,23 @@
   community.mysql.mysql_db:
     state: dump
     name: '{{site_name}}_prod'
-    target: '/home/ansible/{{site_name}}_prod.sql'
+    target: '/home/ansible/{{site_name}}.sql'
     login_unix_socket: /var/run/mysqld/mysqld.sock
     pipefail: true
+
+- name: zip backup for transport
+  ansible.builtin.archive:
+    path: /home/ansible/{{site_name}}.sql
+    dest: /home/ansible/{{site_name}}.sql.zip
+    format: zip
+    force_archive: yes
 
 - name: export backup
   ansible.builtin.fetch:
     dest: './backup'
-    # src: "/home/ansible/{{site_name}}_prod.{{ansible_facts.ansible_date_time.date}}.sql"
-    src: '/home/ansible/{{site_name}}_prod.sql'
+    src: '/home/ansible/{{site_name}}.sql.zip'
 
 - name: cleanup
   ansible.builtin.file:
-    path: '/home/ansible/{{site_name}}_prod.sql'
+    path: '/home/ansible/{{site_name}}.sql.zip'
     state: absent
