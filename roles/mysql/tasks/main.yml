@@ -50,11 +50,13 @@
   include: backup.yml
   tags:
     - backup
+    - backup_db
     - never
 
 - name: restore from backup
   include: restore.yml
   tags:
     - restore
+    - restore_db
     - never
   notify: restart mysql

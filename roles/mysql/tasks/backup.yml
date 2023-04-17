@@ -18,7 +18,12 @@
     dest: './backup'
     src: '/home/ansible/{{site_name}}.sql.zip'
 
-- name: cleanup
+- name: cleanup .sql.zip
   ansible.builtin.file:
     path: '/home/ansible/{{site_name}}.sql.zip'
+    state: absent
+
+- name: cleanup .sql
+  ansible.builtin.file:
+    path: '/home/ansible/{{site_name}}.sql'
     state: absent
