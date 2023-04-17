@@ -1,0 +1,35 @@
+# The ghost cli is really hostile to operators, actually
+# It enforces bad security, like keeping the security sensitive config file world readable
+# So, working around that
+- block:
+  - name: prep config for updates
+    become: true
+    ansible.builtin.file:
+      dest: /var/www/{{site_name}}/config.production.json
+      state: file
+      mode: 0664
+      owner: ghost
+      group: root
+
+  - name: update ghost
+    ansible.builtin.command:
+      chdir: /var/www/{{site_name}}
+      argv:
+        - ghost
+        - update
+        - "--no-restart"
+    notify: restart ghost
+  
+  rescue:
+    - name: run all handlers
+      meta: flush_handlers
+  
+  always:
+    - name: restore config
+      become: true
+      ansible.builtin.file:
+        dest: /var/www/{{site_name}}/config.production.json
+        state: file
+        mode: 0660
+        owner: ghost
+        group: root

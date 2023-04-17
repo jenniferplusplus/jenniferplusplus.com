@@ -1,3 +1,11 @@
+- name: install ghost-cli
+  become: true
+  community.general.npm:
+    name: ghost-cli
+    global: true
+    production: true
+    version: latest
+
 - name: "create ghost user group"
   become: true
   ansible.builtin.group:
@@ -88,6 +96,10 @@
   ansible.builtin.service:
     name: ghost_{{site_name}}
     state: started
+    
+
+####
+# included task files
 
 - name: take backup
   include: backup.yml
@@ -102,3 +114,9 @@
     - restore
     - restore_content
     - never
+
+- name: update ghost
+  include: update.yml
+  tags:
+    - update
+    - update_blog

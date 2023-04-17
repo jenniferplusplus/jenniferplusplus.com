@@ -4,6 +4,12 @@
 
 * Reminder that ansible just doesn't work on windows. Do this from WSL.
 
+Get requirements
+
+```bash
+ansible-galaxy install -r requirements.yml
+```
+
 ### How to bootstrap
 
 1. Get a new host
