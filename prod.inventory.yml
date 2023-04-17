@@ -1,5 +1,5 @@
 all:
-  hosts:
+  children:
     blog:
       hosts:
         jenniferplusplus.com:
