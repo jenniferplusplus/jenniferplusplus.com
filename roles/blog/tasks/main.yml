@@ -93,10 +93,12 @@
   include: backup.yml
   tags:
     - backup
+    - backup_content
     - never
 
 - name: restore from backup
   include: restore.yml
   tags:
     - restore
+    - restore_content
     - never
