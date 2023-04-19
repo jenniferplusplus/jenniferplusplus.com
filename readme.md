@@ -38,8 +38,9 @@ ansible-playbook site.yml --vault-password-file .vault_key -t restore,all
 
 ## Todo
 
-1. Backups
-2. Ghost updates
+1. ~~Backups~~
+2. ~~Ghost updates~~
+3. Monitoring
 3. Run from not my laptop (probs github actions)
 4. wiki (probs wiki.js)
 5. wiki updates
