@@ -1,2 +1,6 @@
 site_name: jenniferplusplus
 admin_email: mail@jenniferplusplus.com
+monitor:
+  influxdata_url: https://us-east-1-1.aws.cloud2.influxdata.com
+  influxdata_org: DevOps
+  influxdata_bucket: default bucket

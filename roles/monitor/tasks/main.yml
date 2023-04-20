@@ -1,0 +1,37 @@
+- name: add influxdata PPA signing key
+  become: true
+  ansible.builtin.get_url:
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
+    dest: /etc/apt/influxdata-archive_compat.gpg.key
+
+- name: add influxdata PPA
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64 signed-by=/etc/apt/influxdata-archive_compat.gpg.key] https://repos.influxdata.com/debian stable main
+    state: present
+
+- name: install telegraf
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+    name:
+      - telegraf
+    state: latest
+  notify: restart telegraf
+
+- name: copy telegraf influxdb config
+  become: true
+  ansible.builtin.template:
+    dest: /etc/telegraf/telegraf.d/influxdb.telegraf.conf
+    src: templates/influxdb.telegraf.conf.j2
+    owner: telegraf
+    mode: 0640
+  notify: restart telegraf
+
+- name: copy main influxdb config
+  become: true
+  ansible.builtin.template:
+    dest: /etc/telegraf/telegraf.d/main.telegraf.conf
+    src: templates/main.telegraf.conf.j2
+    mode: 0644
+  notify: restart telegraf

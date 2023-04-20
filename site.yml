@@ -8,6 +8,7 @@
   roles: 
     - bootstrap
     - common
+
 - name: System updates
   hosts: all
   vars_files:
@@ -15,6 +16,17 @@
   tags: update
   roles:
     - common
+
+- name: Configure monitoring
+  hosts: all
+  vars_files:
+    - vars/all.yml
+    - vars/secrets.yml
+  tags:
+    - monitor
+  roles:
+    - monitor
+
 - name: Configure Web servers
   hosts: web
   vars_files:
@@ -22,6 +34,7 @@
   tags: web
   roles: 
     - web
+
 - name: Configure MySql servers
   hosts: mysql
   vars_files:
@@ -30,6 +43,7 @@
   tags: mysql
   roles: 
     - mysql
+
 - name: Configure blog servers
   hosts: blog
   vars_files:

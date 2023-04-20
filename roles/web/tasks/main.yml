@@ -33,6 +33,21 @@
   notify: 
     - restart nginx
 
+- name: copy nginx_status site config
+  become: true
+  ansible.builtin.copy:
+    src: files/status.conf
+    dest: /etc/nginx/sites-available/nginx_status.conf
+
+- name: enable nginx_status site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/nginx_status.conf
+    dest: /etc/nginx/sites-enabled/nginx_status.conf
+    state: link
+  notify: 
+    - restart nginx
+
 - name: register certbot
   become: true
   ansible.builtin.command: 
