@@ -96,6 +96,7 @@
   ansible.builtin.service:
     name: ghost_{{site_name}}
     state: started
+    enabled: yes
     
 
 ####

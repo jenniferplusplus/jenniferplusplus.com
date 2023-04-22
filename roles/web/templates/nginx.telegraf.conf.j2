@@ -1,0 +1,12 @@
+[[inputs.nginx]]
+  ## An array of Nginx stub_status URI to gather stats.
+  urls = ["http://{{ansible_hostname}}/nginx_status"]
+  response_timeout = "5s"
+
+[[inputs.tail]]
+  name_override = "nginxlog"
+  files = ["/var/log/nginx/access.log"]
+  from_beginning = true
+  pipe = false
+  data_format = "grok"
+  grok_patterns = ["%{COMBINED_LOG_FORMAT}"]
