@@ -3,6 +3,7 @@
   ansible.builtin.get_url:
     url: https://repos.influxdata.com/influxdata-archive_compat.key
     dest: /etc/apt/influxdata-archive_compat.gpg.key
+    checksum: sha256:393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c
 
 - name: add influxdata PPA
   become: true
@@ -13,7 +14,7 @@
 - name: install telegraf
   become: true
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: no
     name:
       - telegraf
     state: latest
@@ -26,12 +27,4 @@
     src: templates/influxdb.telegraf.conf.j2
     owner: telegraf
     mode: 0640
-  notify: restart telegraf
-
-- name: copy main influxdb config
-  become: true
-  ansible.builtin.template:
-    dest: /etc/telegraf/telegraf.d/main.telegraf.conf
-    src: templates/main.telegraf.conf.j2
-    mode: 0644
   notify: restart telegraf
