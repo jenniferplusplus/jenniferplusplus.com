@@ -3,3 +3,10 @@
   ansible.builtin.service:
     name: mysql
     state: restarted
+
+- name: restart telegraf
+  tags: always
+  become: true
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted

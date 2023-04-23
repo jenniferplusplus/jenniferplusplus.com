@@ -17,7 +17,7 @@
   become: true
   community.mysql.mysql_user:
     name: root
-    password: "{{mysql_root_pw}}"
+    password: "{{secret.mysql_root_pw}}"
     login_unix_socket: /var/run/mysqld/mysqld.sock
     check_implicit_admin: yes
   notify: restart mysql
@@ -42,9 +42,37 @@
 - name: add mysql user for ghost
   community.mysql.mysql_user:
     name: ghost
-    password: "{{mysql_ghost_pw}}"
+    password: "{{secret.mysql_ghost_pw}}"
     priv: "{{site_name}}_prod.*:ALL"
   notify: restart mysql
+
+- name: add mysql user for telegraf
+  community.mysql.mysql_user:
+    name: telegraf
+    password: "{{secret.mysql_telegraf_pw}}"
+    state: present
+    priv:
+      '*.*': 'REPLICATION CLIENT, PROCESS'
+      '`cluster\_replication`.*': SELECT
+      '`information\_schema`.*': SELECT
+      '`performance\_schema`.*': SELECT
+    resource_limits:
+      MAX_QUERIES_PER_HOUR: 0
+      MAX_CONNECTIONS_PER_HOUR: 0
+      MAX_UPDATES_PER_HOUR: 0
+      MAX_USER_CONNECTIONS: 0
+  notify: restart mysql
+
+# TODO: the mysql plugin exceeds the limits on the influx free plan
+- name: enable telegraf mysql plugin
+  when: false
+  become: true
+  ansible.builtin.template:
+    src: templates/mysql.telegraf.conf
+    dest: /etc/telegraf/telegraf.d/mysql.telegraf.conf.off
+    mode: 0640
+    owner: telegraf
+  notify: restart telegraf
 
 - name: take backup
   include: backup.yml
