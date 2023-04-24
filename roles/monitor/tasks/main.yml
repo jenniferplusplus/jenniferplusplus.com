@@ -11,12 +11,29 @@
     repo: deb [arch=amd64 signed-by=/etc/apt/influxdata-archive_compat.gpg.key] https://repos.influxdata.com/debian stable main
     state: present
 
-- name: install telegraf
+
+- name: add grafana PPA signing key
+  become: true
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /etc/apt/grafana.gpg.key
+    
+
+- name: add grafana PPA
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64 signed-by=/etc/apt/grafana.gpg.key] https://apt.grafana.com stable main
+    state: present
+
+- name: install services
   become: true
   ansible.builtin.apt:
     update_cache: no
     name:
       - telegraf
+      - influxdb2
+      - influxdb2-cli
+      - grafana
     state: latest
   notify: restart telegraf
 
@@ -28,11 +45,78 @@
       - adm
     append: yes
 
+- name: configure influxdb
+  become: true
+  ansible.builtin.copy:
+    src: files/config.toml
+    dest: /etc/influxdb/config.toml
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart influxdb
+
+- name: enable influxdb service
+  become: true
+  ansible.builtin.service:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: setup influxdb
+  ansible.builtin.command:
+    argv:
+      - influx
+      - setup
+      - '--username'
+      - root
+      - '--password'
+      - '{{secret.influxdb_root_pw}}'
+      - '--token'
+      - '{{secret.influxdb_root_token}}'
+      - '--org'
+      - '{{site_name}}'
+      - '--bucket'
+      - default
+      - '--retention'
+      - '30d'
+      - '--force'
+    creates: /home/ansible/.influxdbv2/configs
+  notify: restart influxdb
+
+- name: generate influxdb access token
+  shell: 
+    cmd: influx auth create -d 'default all access' --all-access --json > {{site_name}}_influxdb_all_access.json
+    creates: /home/ansible/{{site_name}}_influxdb_all_access.json
+    executable: /bin/bash
+
+- name: retrieve influxdb access token
+  changed_when: false
+  shell: cat /home/ansible/{{site_name}}_influxdb_all_access.json
+  register: influxdb_all_access_cat
+
+- name: set token value as Fact
+  ansible.builtin.set_fact:
+    influxdb_all_access_token: "{{influxdb_all_access_cat.stdout | from_json | json_query('token')}}"
+
 - name: configure telegraf influxdb plugin
   become: true
   ansible.builtin.template:
     dest: /etc/telegraf/telegraf.d/influxdb.telegraf.conf
-    src: templates/influxdb.telegraf.conf.j2
+    src: templates/influxdb.telegraf.conf
     owner: telegraf
     mode: 0640
   notify: restart telegraf
+
+- name: enable telegraf service
+  become: true
+  ansible.builtin.service:
+    name: telegraf
+    state: started
+    enabled: yes
+
+- name: enable grafana service
+  become: true
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: yes
