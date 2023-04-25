@@ -12,7 +12,7 @@
   when: use_ssl == true
   ansible.builtin.template:
     dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
-    src: files/sites-available.ghost.conf.j2
+    src: templates/sites-available.ghost.conf
     mode: 0644
   notify: 
     - restart nginx
@@ -22,7 +22,7 @@
   when: use_ssl == false
   ansible.builtin.template:
     dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
-    src: files/sites-available.ghost.no-ssl.conf.j2
+    src: templates/sites-available.ghost.no-ssl.conf
     mode: 0644
   notify: 
     - restart nginx
@@ -58,7 +58,7 @@
   become: true
   ansible.builtin.template:
     dest: /etc/telegraf/telegraf.d/nginx.telegraf.conf
-    src: templates/nginx.telegraf.conf.j2
+    src: templates/nginx.telegraf.conf
     owner: telegraf
     mode: 0644
   notify: restart telegraf
