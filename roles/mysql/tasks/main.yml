@@ -63,6 +63,19 @@
       MAX_USER_CONNECTIONS: 0
   notify: restart mysql
 
+- name: add mysql user for grafana
+  community.mysql.mysql_user:
+    name: grafana
+    password: "{{secret.mysql_grafana_pw}}"
+    priv: "grafana.*:ALL"
+  notify: restart mysql
+
+- name: create mysql grafana db
+  community.mysql.mysql_db:
+    name: grafana
+    state: present
+  notify: restart mysql
+
 # TODO: the mysql plugin exceeds the limits on the influx free plan
 - name: enable telegraf mysql plugin
   when: false

@@ -114,6 +114,16 @@
     state: started
     enabled: yes
 
+- name: configure grafana
+  become: true
+  ansible.builtin.template:
+    src: templates/grafana.ini
+    dest: /etc/grafana/grafana.ini
+    mode: 0640
+    owner: root
+  notify: restart grafana
+
+
 - name: enable grafana service
   become: true
   ansible.builtin.service:
