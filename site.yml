@@ -17,16 +17,6 @@
   roles:
     - common
 
-- name: Configure monitoring
-  hosts: all
-  vars_files:
-    - vars/all.yml
-    - vars/secrets.yml
-  tags:
-    - monitor
-  roles:
-    - monitor
-
 - name: Configure Web servers
   hosts: web
   vars_files:
@@ -53,3 +43,13 @@
   roles: 
     - node
     - blog
+
+- name: Configure monitoring
+  hosts: all
+  vars_files:
+    - vars/all.yml
+    - vars/secrets.yml
+  tags:
+    - monitor
+  roles:
+    - monitor

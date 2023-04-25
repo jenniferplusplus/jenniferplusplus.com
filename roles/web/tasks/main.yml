@@ -7,6 +7,15 @@
       - python3-certbot-nginx
     state: latest
 
+- name: copy global configs
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nginx/conf.d/connection_upgrade.conf
+    src: files/connection_upgrade.conf
+    mode: 0644
+  notify: 
+    - restart nginx
+
 - name: copy ghost site config w/ssl
   become: true
   when: use_ssl == true
@@ -63,6 +72,35 @@
     mode: 0644
   notify: restart telegraf
 
+- name: copy grafana site config WITHOUT SSL
+  become: true
+  when: use_ssl == false
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-available/grafana.conf
+    src: templates/sites-available.grafana.no-ssl.conf
+    mode: 0644
+  notify: 
+    - restart nginx
+
+- name: copy grafana site config
+  become: true
+  when: use_ssl == true
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-available/grafana.conf
+    src: templates/sites-available.grafana.conf
+    mode: 0644
+  notify: 
+    - restart nginx
+
+- name: enable grafana site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/grafana.conf
+    dest: /etc/nginx/sites-enabled/grafana.conf
+    state: link
+  notify: 
+    - restart nginx
+
 - name: register certbot
   become: true
   ansible.builtin.command: 
@@ -76,12 +114,22 @@
   args:
     creates: /etc/letsencrypt/accounts
 
-- name: 'get certificate'
+- name: 'get base certificate'
   become: true
   when: use_ssl == true
   command: 'certbot certonly -n --nginx --keep -d {{ nginx_server_name }}'
   args:
     creates: '/etc/letsencrypt/live/{{ nginx_server_name }}'
+  ignore_errors: true
+  notify: 
+    - restart nginx
+
+- name: get grafana subdomain certificat
+  become: true
+  when: use_ssl == true
+  command: 'certbot certonly -n --nginx --keep -d grafana.{{nginx_server_name}}'
+  args:
+    creates: '/etc/letsencrypt/live/grafana.{{nginx_server_name}}'
   ignore_errors: true
   notify: 
     - restart nginx
