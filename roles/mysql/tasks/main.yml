@@ -95,6 +95,7 @@
     - never
 
 - name: restore from backup
+  when: false
   include: restore.yml
   tags:
     - restore

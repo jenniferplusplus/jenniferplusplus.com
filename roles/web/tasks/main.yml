@@ -61,6 +61,13 @@
     mode: 0644
   notify: restart telegraf
 
+- name: check grafana key exists
+  become: true
+  ansible.builtin.stat:
+    path: /etc/letsencrypt/live/grafana.{{nginx_server_name}}/privkey.pem
+  register: stat_grafana
+
+
 - name: copy grafana site config
   become: true
   ansible.builtin.template:
@@ -105,7 +112,7 @@
 - name: get grafana subdomain certificate
   become: true
   when: use_ssl == true
-  command: 'certbot certonly -n --nginx --keep -d grafana.{{nginx_server_name}}'
+  command: 'certbot certonly -n --webroot --webroot-path /var/www/grafana/system/nginx-root --keep -d grafana.{{nginx_server_name}}'
   args:
     creates: '/etc/letsencrypt/live/grafana.{{nginx_server_name}}'
   ignore_errors: true
