@@ -34,6 +34,7 @@ And now you can do things as ansible
 ansible-playbook site.yml --vault-password-file .vault_key
 ansible-playbook site.yml --vault-password-file .vault_key -t backup,all
 ansible-playbook site.yml --vault-password-file .vault_key -t restore,all
+ansible-playbook site.yml --vault-password-file .vault_key --skip-tags never -t web
 ```
 
 ## Todo

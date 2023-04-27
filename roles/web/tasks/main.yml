@@ -16,22 +16,11 @@
   notify: 
     - restart nginx
 
-- name: copy ghost site config w/ssl
+- name: copy ghost site config
   become: true
-  when: use_ssl == true
   ansible.builtin.template:
     dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
     src: templates/sites-available.ghost.conf
-    mode: 0644
-  notify: 
-    - restart nginx
-
-- name: copy ghost site config WITHOUT ssl
-  become: true
-  when: use_ssl == false
-  ansible.builtin.template:
-    dest: /etc/nginx/sites-available/{{inventory_hostname}}.conf
-    src: templates/sites-available.ghost.no-ssl.conf
     mode: 0644
   notify: 
     - restart nginx
@@ -72,19 +61,8 @@
     mode: 0644
   notify: restart telegraf
 
-- name: copy grafana site config WITHOUT SSL
-  become: true
-  when: use_ssl == false
-  ansible.builtin.template:
-    dest: /etc/nginx/sites-available/grafana.conf
-    src: templates/sites-available.grafana.no-ssl.conf
-    mode: 0644
-  notify: 
-    - restart nginx
-
 - name: copy grafana site config
   become: true
-  when: use_ssl == true
   ansible.builtin.template:
     dest: /etc/nginx/sites-available/grafana.conf
     src: templates/sites-available.grafana.conf
@@ -124,7 +102,7 @@
   notify: 
     - restart nginx
 
-- name: get grafana subdomain certificat
+- name: get grafana subdomain certificate
   become: true
   when: use_ssl == true
   command: 'certbot certonly -n --nginx --keep -d grafana.{{nginx_server_name}}'
