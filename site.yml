@@ -17,6 +17,17 @@
   roles:
     - common
 
+- name: Configure monitoring
+  hosts: all
+  vars_files:
+    - vars/all.yml
+    - vars/{{env_name}}.secrets.yml
+  tags:
+    - monitor
+    - telegraf
+  roles:
+    - monitor
+
 - name: Configure Web servers
   hosts: web
   vars_files:
@@ -44,12 +55,13 @@
     - node
     - blog
 
-- name: Configure monitoring
+- name: Configure grafana
   hosts: all
   vars_files:
     - vars/all.yml
     - vars/{{env_name}}.secrets.yml
   tags:
     - monitor
+    - grafana
   roles:
-    - monitor
+    - grafana
