@@ -1,4 +1,6 @@
 all:
+  vars:
+    env_name: "prod"
   children:
     blog:
       hosts:
