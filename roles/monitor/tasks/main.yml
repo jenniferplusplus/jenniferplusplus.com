@@ -30,6 +30,24 @@
       - adm
     append: yes
 
+- name: configure telegraf agent
+  become: true
+  ansible.builtin.copy:
+    src: files/telegraf.conf
+    dest: /etc/telegraf/telegraf.conf
+    owner: telegraf
+    mode: 0644
+  notify: restart telegraf
+
+- name: configure system metrics
+  become: true
+  ansible.builtin.copy:
+    src: files/system.telegraf.conf
+    dest: /etc/telegraf/telegraf.d/system.telegraf.conf
+    mode: 0644
+    owner: telegraf
+  notify: restart telegraf
+
 - name: configure influxdb
   become: true
   ansible.builtin.copy:

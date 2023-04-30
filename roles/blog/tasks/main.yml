@@ -92,6 +92,15 @@
     state: link
   notify: restart ghost
 
+- name: collect metrics for ghost
+  become: true
+  ansible.builtin.template:
+    src: templates/ghost.telegraf.conf
+    dest: /etc/telegraf/telegraf.d/ghost.telegraf.conf
+    mode: 0644
+    owner: telegraf
+  notify: restart telegraf
+
 - name: start ghost
   become: true
   ansible.builtin.service:

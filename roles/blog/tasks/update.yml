@@ -33,3 +33,4 @@
         mode: 0660
         owner: ghost
         group: root
+      notify: restart ghost

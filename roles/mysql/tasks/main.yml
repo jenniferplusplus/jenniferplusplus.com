@@ -78,11 +78,10 @@
 
 # TODO: the mysql plugin exceeds the limits on the influx free plan
 - name: enable telegraf mysql plugin
-  when: false
   become: true
   ansible.builtin.template:
     src: templates/mysql.telegraf.conf
-    dest: /etc/telegraf/telegraf.d/mysql.telegraf.conf.off
+    dest: /etc/telegraf/telegraf.d/mysql.telegraf.conf
     mode: 0640
     owner: telegraf
   notify: restart telegraf
