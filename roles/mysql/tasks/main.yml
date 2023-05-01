@@ -67,7 +67,19 @@
   community.mysql.mysql_user:
     name: grafana
     password: "{{secret.mysql_grafana_pw}}"
+    state: present
     priv: "grafana.*:ALL"
+  notify: restart mysql
+
+- name: add mysql user for grafana datasource
+  community.mysql.mysql_user:
+    name: grafana_ds
+    password: "{{secret.mysql_grafana_ds_pw}}"
+    state: present
+    priv:
+      '`information\_schema`.*': SELECT
+      '`performance\_schema`.*': SELECT
+      '*.*': PROCESS
   notify: restart mysql
 
 - name: create mysql grafana db
