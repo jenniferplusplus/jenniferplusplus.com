@@ -1,14 +1,5 @@
 ---
 
-- name: Bootstrap and update hosts
-  hosts: all
-  vars_files:
-    - "vars/all.yml"
-  tags: bootstrap
-  roles: 
-    - bootstrap
-    - common
-
 - name: System updates
   hosts: all
   vars_files:

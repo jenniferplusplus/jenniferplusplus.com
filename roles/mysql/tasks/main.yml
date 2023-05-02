@@ -3,8 +3,8 @@
   apt:
     name:
       - mysql-server
-      - certbot
-      - python3-certbot-nginx
+      - mysql-client
+      - python3-pymysql
     state: latest
 
 - name: start Mysql

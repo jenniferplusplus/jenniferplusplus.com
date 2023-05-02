@@ -2,6 +2,7 @@
   become: true
   apt:
     update_cache: yes
+    cache_valid_time: 3600
     upgrade: "yes"
 
 - name: install common utilities
@@ -11,3 +12,9 @@
       - zip
       - unzip
     state: latest
+
+- name: reboot
+  tags:
+    - reboot
+  debug:
+    msg: "this is where I would do a reboot task, if I had one"

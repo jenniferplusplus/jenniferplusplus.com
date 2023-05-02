@@ -7,12 +7,24 @@
       - python3-certbot-nginx
     state: latest
 
+- name: copy snippets
+  become: true
+  ansible.builtin.copy:
+    src: files/{{item}}
+    dest: /etc/nginx/snippets/{{item}}
+    mode: 0644
+  with_items:
+    - gzip.conf
+
 - name: copy global configs
   become: true
   ansible.builtin.copy:
-    dest: /etc/nginx/conf.d/connection_upgrade.conf
-    src: files/connection_upgrade.conf
+    dest: /etc/nginx/conf.d/{{item}}
+    src: files/{{item}}
     mode: 0644
+  with_items:
+    - connection_upgrade.conf
+    - access_log_formats.conf
   notify: 
     - restart nginx
 
