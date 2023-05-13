@@ -28,6 +28,32 @@
   notify: 
     - restart nginx
 
+- name: copy default site config
+  become: true
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-available/default.conf
+    src: files/sites-available.default.conf
+    mode: 0644
+  notify: 
+    - restart nginx
+
+- name: enable default site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default.conf
+    dest: /etc/nginx/sites-enabled/default.conf
+    state: link
+  notify: 
+    - restart nginx
+
+- name: enable default site
+  become: true
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: 
+    - restart nginx
+
 - name: copy ghost site config
   become: true
   ansible.builtin.template:
