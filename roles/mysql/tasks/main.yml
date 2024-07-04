@@ -99,7 +99,7 @@
   notify: restart telegraf
 
 - name: take backup
-  include: backup.yml
+  include_tasks: backup.yml
   tags:
     - backup
     - backup_db
@@ -107,7 +107,7 @@
 
 - name: restore from backup
   when: false
-  include: restore.yml
+  import_tasks: restore.yml
   tags:
     - restore
     - restore_db

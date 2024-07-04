@@ -117,7 +117,7 @@
 # included task files
 
 - name: take backup
-  include: backup.yml
+  include_tasks: backup.yml
   tags:
     - backup
     - backup_content
@@ -125,14 +125,14 @@
 
 - name: restore from backup
   when: false
-  include: restore.yml
+  include_tasks: restore.yml
   tags:
     - restore
     - restore_content
     - never
 
 - name: update ghost
-  include: update.yml
+  include_tasks: update.yml
   tags:
     - update
     - update_blog

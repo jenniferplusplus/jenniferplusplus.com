@@ -3,7 +3,13 @@
   ansible.builtin.get_url:
     url: https://apt.grafana.com/gpg.key
     dest: /etc/apt/grafana.gpg.key
-    
+
+- name: (temp) remove grafana PPA
+  when: false
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64 signed-by=/etc/apt/grafana.gpg.key] https://apt.grafana.com stable main
+    state: absent    
 
 - name: add grafana PPA
   become: true

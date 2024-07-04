@@ -1,0 +1,20 @@
+---
+
+- name: Configure monitoring
+  hosts: all
+  vars_files:
+    - vars/all.yml
+    - vars/{{env_name}}.secrets.yml
+  roles:
+    - monitor
+
+- name: Configure grafana
+  hosts: all
+  vars_files:
+    - vars/all.yml
+    - vars/{{env_name}}.secrets.yml
+  tags:
+    - monitor
+    - grafana
+  roles:
+    - grafana
