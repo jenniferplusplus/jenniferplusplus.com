@@ -13,9 +13,9 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "fedora/40-cloud-base"
-  config.vm.box_version = "40.20240414.0"
-  
+  config.vm.box = "bento/fedora-40"
+  config.vm.box_version = "202404.23.0"
+
   config.dns.tld = "vagrant"
   config.vm.hostname = "jenniferplusplus"
   config.dns.patterns = [/^(?:\w+\.)*jenniferplusplus\.vagrant$/]

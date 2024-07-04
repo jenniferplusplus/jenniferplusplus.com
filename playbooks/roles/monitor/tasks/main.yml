@@ -103,7 +103,7 @@
 
 - name: fetch token
   ansible.builtin.fetch:
-    dest: 'backup/{{site_name}}_influxdb_all_access.json'
+    dest: './backup'
     src: /home/ansible/{{site_name}}_influxdb_all_access.json
 
 - name: configure telegraf influxdb plugin

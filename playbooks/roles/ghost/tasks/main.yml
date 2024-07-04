@@ -1,0 +1,4 @@
+- name: Install nodejs
+  dnf:
+    name: nodejs
+    state: latest

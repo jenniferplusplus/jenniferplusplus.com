@@ -1,5 +1,29 @@
 # IAC for jenniferplusplus.com
 
+Quickstart:
+```shell
+vagrant up
+```
+
+```shell
+vagrant dns --install # (first time only)
+```
+
+```shell
+ansible-playbook playbooks/site.yml --vault-password-file .localkey
+```
+
+## Apps
+
+- [ ] Ghost blog
+- [ ] Grafana
+- [ ] [LinkWarden](https://github.com/linkwarden/linkwarden)
+- [ ] [Bookstack](https://www.bookstackapp.com/)
+- [ ] [Plausible](https://github.com/plausible/community-edition/)
+
+<!-- Keeping for the moment, until I get the rebuild settled -->
+# Old - remove this
+
 ## Notes to myself
 
 * Reminder that ansible just doesn't work on windows. Do this from WSL.

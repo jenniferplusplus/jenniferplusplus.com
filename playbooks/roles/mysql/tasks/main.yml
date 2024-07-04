@@ -1,55 +1,66 @@
-- name: install mysql utilities
+- name: Install mysql and utilities
   become: true
-  apt:
+  ansible.builtin.dnf:
     name:
+      - mysql
       - mysql-server
-      - mysql-client
-      - python3-pymysql
+      - python3-PyMySQL
     state: latest
-
-- name: start Mysql
+  notify: restart mysql
+  
+- name: Start MySQL
   become: true
-  ansible.builtin.service:
-    name: mysql
+  ansible.builtin.systemd:
+    name: mysqld
     state: started
+    enabled: true
 
-- name: set root user password
+# MySQL
+# These steps allow ansible to administer MySQL during:
+  # bootstrap
+  # regular usage
+  # secret rotation
+  
+# First, connect with default credentials and set a root password
+- name: Set root user password 
   become: true
   community.mysql.mysql_user:
     name: root
-    password: "{{secret.mysql_root_pw}}"
-    login_unix_socket: /var/run/mysqld/mysqld.sock
+    password: "{{secret.mysql.root}}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
     check_implicit_admin: yes
   notify: restart mysql
 
-# Ansible will connect to mysql and perform actions with these credentials in future steps
-- name: set default credentials for ansible
-  ansible.builtin.template:
-    src: files/my.cnf.j2
-    dest: /home/ansible/.my.cnf
-    mode: 0660
-    owner: ansible
-
-# Also allow root to connect to mysql with the same credentials, to enable rotating secrets
-- name: set default credentials for root
+# Then, set that password as the new default
+- name: Set default credentials for root
   become: true
   ansible.builtin.template:
-    src: files/my.cnf.j2
+    src: templates/my.cnf
     dest: /root/.my.cnf
     mode: 0600
     owner: root
 
-- name: add mysql user for ghost
+# Ansible will connect to mysql and perform actions with these credentials in future steps
+- name: Set default credentials for ansible user
+  ansible.builtin.template:
+    src: templates/my.cnf
+    dest: '{{ ansible_user_dir }}/.my.cnf'
+    mode: 0660
+    owner: '{{ ansible_user_id }}'
+
+- name: Add MySQL application users
   community.mysql.mysql_user:
-    name: ghost
-    password: "{{secret.mysql_ghost_pw}}"
-    priv: "{{site_name}}_prod.*:ALL"
+    name: '{{ item }}'
+    password: '{{secret.mysql[item]}}'
+    priv: "{{ item }}.*:ALL"
+  with_items: '{{ mysql.users }}'
   notify: restart mysql
 
-- name: add mysql user for telegraf
+- name: Add MySQL Telegraf user
+  when: secret.mysql.telegraf | bool and ansible_roles
   community.mysql.mysql_user:
     name: telegraf
-    password: "{{secret.mysql_telegraf_pw}}"
+    password: '{{secret.mysql.telegraf"]}}'
     state: present
     priv:
       '*.*': 'REPLICATION CLIENT, PROCESS'
@@ -63,33 +74,25 @@
       MAX_USER_CONNECTIONS: 0
   notify: restart mysql
 
-- name: add mysql user for grafana
-  community.mysql.mysql_user:
-    name: grafana
-    password: "{{secret.mysql_grafana_pw}}"
-    state: present
-    priv: "grafana.*:ALL"
-  notify: restart mysql
-
-- name: add mysql user for grafana datasource
+- name: Add MySQL user for Grafana datasource
   community.mysql.mysql_user:
     name: grafana_ds
-    password: "{{secret.mysql_grafana_ds_pw}}"
+    password: "{{secret.mysql.grafana_ds}}"
     state: present
     priv:
       '`information\_schema`.*': SELECT
       '`performance\_schema`.*': SELECT
       '*.*': PROCESS
   notify: restart mysql
-
-- name: create mysql grafana db
+  
+- name: Create Grafana db
   community.mysql.mysql_db:
     name: grafana
     state: present
   notify: restart mysql
-
-# TODO: the mysql plugin exceeds the limits on the influx free plan
-- name: enable telegraf mysql plugin
+  
+- name: Enable Telegraf monitoring
+  when: false
   become: true
   ansible.builtin.template:
     src: templates/mysql.telegraf.conf
@@ -97,19 +100,3 @@
     mode: 0640
     owner: telegraf
   notify: restart telegraf
-
-- name: take backup
-  include_tasks: backup.yml
-  tags:
-    - backup
-    - backup_db
-    - never
-
-- name: restore from backup
-  when: false
-  import_tasks: restore.yml
-  tags:
-    - restore
-    - restore_db
-    - never
-  notify: restart mysql
