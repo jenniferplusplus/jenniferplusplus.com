@@ -4,14 +4,14 @@ all:
   children:
     blog:
       hosts:
-        "jenniferplusplus.local":
+        "jenniferplusplus.vagrant":
     mysql:
       hosts:
-        "jenniferplusplus.local":
+        "jenniferplusplus.vagrant":
     web:
       vars:
         use_ssl: no
         site_url: "http://jenniferplusplus.local"
         nginx_server_name: "jenniferplusplus.local"
       hosts:
-        "jenniferplusplus.local":
+        "jenniferplusplus.vagrant":

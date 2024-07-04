@@ -3,3 +3,5 @@ old.yml
 backup/
 test/
 .idea/
+.vagrant/
+
