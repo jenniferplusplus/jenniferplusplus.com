@@ -1,0 +1,110 @@
+- name: Install Nginx
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - 'nginx'
+      - 'python3-libselinux'
+      - 'policycoreutils-python-utils'
+    state: present
+
+# This enables shared access to files that will be served by Nginx
+- name: Create www-data user group
+  become: true
+  group:
+    name: www-data
+    state: present
+
+- name: Add Nginx to www-data group
+  become: true
+  user:
+    name: nginx
+    groups:
+      - www-data
+    append: true
+    state: present
+
+- name: Add Ansible user to www-data group
+  become: true
+  user:
+    name: '{{ ansible_user_id }}'
+    groups:
+      - www-data
+    append: true
+    state: present
+  register: ansible_group
+
+- name: Reset Ansible user's session
+  ansible.builtin.meta:
+    reset_connection
+  when: ansible_group.changed
+
+- name: Create config dirs
+  become: true
+  ansible.builtin.file:
+    path: '/etc/nginx/{{ item }}/'
+    state: directory
+    mode: 0774
+    owner: nginx
+  with_items:
+    - sites-enabled
+    - snippets
+
+- name: Add snippets
+  become: true
+  ansible.builtin.copy:
+    src: files/snippets/{{item}}
+    dest: /etc/nginx/snippets/{{item}}
+    mode: 0644
+  with_items:
+    - gzip.conf
+  notify: restart nginx
+
+- name: Configure Nginx
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nginx/nginx.conf
+    src: files/nginx.conf
+    mode: 0644
+  notify: restart nginx
+
+- name: Add global configs
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nginx/conf.d/{{item}}
+    src: files/conf.d/{{item}}
+    mode: 0644
+  with_items:
+    - connection_upgrade.conf
+    - access_log_formats.conf
+  notify:
+    - restart nginx
+
+- name: Add default sites
+  become: true
+  ansible.builtin.template:
+    dest: '/etc/nginx/sites-enabled/{{ item }}'
+    src: 'templates/sites/{{ item }}'
+    mode: 0644
+  with_items:
+    - default.conf
+    - fedora.conf
+    - status.conf
+  notify:
+    - restart nginx
+
+- name: Enable Telegraf monitoring
+  become: true
+  ansible.builtin.template:
+    dest: /etc/telegraf/telegraf.d/nginx.telegraf.conf
+    src: templates/telegraf/nginx.telegraf.conf
+    owner: telegraf
+    mode: 0644
+  notify: restart telegraf
+
+- name: Grant Nginx network relay access
+  become: true
+  ansible.posix.seboolean:
+    name: httpd_can_network_relay
+    state: true
+    persistent: true
+  notify: restart nginx

@@ -1,20 +1,13 @@
 all:
   vars:
     site_secrets: 'local.secrets.yml'
+    ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+    ansible_user: vagrant
     
   children:
-    blog:
+    ghost:
       hosts:
         "jenniferplusplus.vagrant":
     mysql:
       hosts:
         jenniferplusplus.vagrant:
-          ansible_ssh_extra_args: -o StrictHostKeyChecking=no
-          ansible_user: vagrant
-    web:
-      vars:
-        use_ssl: no
-        site_url: "http://jenniferplusplus.local"
-        nginx_server_name: "jenniferplusplus.local"
-      hosts:
-        "jenniferplusplus.vagrant":

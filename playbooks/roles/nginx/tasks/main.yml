@@ -1,0 +1,11 @@
+---
+
+- name: Configure Nginx
+  include_tasks: nginx.yml
+
+- name: Configure SSL
+  include_role:
+    name: ssl
+  when: web_use_ssl
+
+...
