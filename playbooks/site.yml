@@ -9,6 +9,8 @@
       users:
         - 'ghost'
         - 'grafana'
+      backup:
+        - 'ghost'
   roles:
     - common
     - influxdb

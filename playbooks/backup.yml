@@ -1,0 +1,56 @@
+---
+
+- name: Backup MySQL
+  hosts:
+    - mysql
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    mysql:
+      backup:
+        - 'ghost'
+
+  pre_tasks:
+    - name: Create temp dir
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/temp/'
+        state: directory
+  
+  post_tasks:
+    - name: Cleanup .sql.zip
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/temp/{{ item }}.sql.{{ ansible_date_time.iso8601 }}.zip'
+        state: absent
+      with_items: '{{ mysql.backup }}'
+
+    - name: Cleanup .sql
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/temp/{{ item }}.sql'
+        state: absent
+      with_items: '{{ mysql.backup }}'
+
+  tasks:    
+    - name: Backup DBs
+      community.mysql.mysql_db:
+        state: dump
+        name: '{{ item }}'
+        target: '{{ ansible_user_dir }}/temp/{{item}}.sql'
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        pipefail: true
+      with_items: '{{ mysql.backup }}'
+    
+    - name: Zip backup for transport
+      ansible.builtin.archive:
+        path: '{{ ansible_user_dir }}/temp/{{ item }}.sql'
+        dest: '{{ ansible_user_dir }}/temp/{{ item }}.sql.{{ ansible_date_time.iso8601 }}.zip'
+        format: zip
+        force_archive: yes
+      with_items: '{{ mysql.backup }}'
+    
+    - name: Export backup
+      ansible.builtin.fetch:
+        dest: './backup'
+        src: '{{ ansible_user_dir }}/temp/{{ item }}.sql.{{ ansible_date_time.iso8601 }}.zip'
+      with_items: '{{ mysql.backup }}'
+
+...
