@@ -92,7 +92,6 @@
   notify: restart mysql
   
 - name: Enable Telegraf monitoring
-  when: false
   become: true
   ansible.builtin.template:
     src: templates/mysql.telegraf.conf

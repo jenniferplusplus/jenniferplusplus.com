@@ -1,0 +1,11 @@
+---
+
+- name: Restarting influxdb
+  listen: restart influxdb
+  become: true
+  ansible.builtin.systemd:
+    name: influxdb
+    state: restarted
+    enabled: true
+
+...

@@ -1,0 +1,86 @@
+---
+
+- name: Add Influxdata repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: influxdata
+    description: InfluxData Repository - Stable
+    baseurl: https://repos.influxdata.com/stable/\$basearch/main
+    gpgkey: https://repos.influxdata.com/influxdata-archive_compat.key
+    gpgcheck: true
+    enabled: true
+  register: influxdata_repo
+
+- name: Install InfluxDB
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - influxdb2
+      - influxdb2-cli
+    state: latest
+    update_cache: '{{ influxdata_repo.changed }}'
+
+- name: Configure InfluxDB
+  become: true
+  ansible.builtin.copy:
+    src: files/config.toml
+    dest: /etc/influxdb/config.toml
+    owner: root
+    group: influxdb
+    mode: 0640
+  notify: restart influxdb
+
+- name: Enable InfluxDB
+  become: true
+  ansible.builtin.systemd:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: Setup InfluxDB
+  ansible.builtin.command:
+    argv:
+      - influx
+      - setup
+      - '--username'
+      - root
+      - '--password'
+      - '{{ secret.influxdb.password }}'
+      - '--token'
+      - '{{ secret.influxdb.operatorToken }}'
+      - '--org'
+      - 'jenniferplusplus.com'
+      - '--bucket'
+      - default
+      - '--retention'
+      - '30d'
+      - '--force'
+    creates: '{{ ansible_user_dir }}/.influxdbv2/configs'
+  notify: restart influxdb
+
+- name: Generate InfluxDB access token
+  shell:
+    cmd: "influx auth create -d 'default all access' --all-access --json > {{ ansible_user_dir }}/influxdb_default_token.json"
+    creates: '{{ ansible_user_dir }}/influxdb_default_token.json'
+    executable: /bin/bash
+
+- name: Retrieve InfluxDB access token
+  changed_when: false
+  shell: 'cat {{ ansible_user_dir }}/influxdb_default_token.json'
+  register: influxdb_default_token_json
+
+- name: Set token value as fact
+  when: not secret.influxdb.accessToken | bool
+  ansible.builtin.set_fact:
+    influxdb_access_token: "{{ influxdb_default_token_json.stdout | from_json | json_query('token') }}"
+  delegate_to: 127.0.0.1
+  run_once: true
+  
+- name: Fetch token
+  when: not secret.influxdb.accessToken | bool
+  ansible.builtin.fetch:
+    dest: './backup'
+    src: '{{ ansible_user_dir }}/influxdb_default_token.json'
+
+
+...
