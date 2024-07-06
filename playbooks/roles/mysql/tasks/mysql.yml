@@ -1,0 +1,102 @@
+- name: Install mysql and utilities
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - mysql
+      - mysql-server
+      - python3-PyMySQL
+    state: latest
+  notify: restart mysql
+  
+- name: Start MySQL
+  become: true
+  ansible.builtin.systemd:
+    name: mysqld
+    state: started
+    enabled: true
+
+# MySQL
+# These steps allow ansible to administer MySQL during:
+  # bootstrap
+  # regular usage
+  # secret rotation
+  
+# First, connect with default credentials and set a root password
+- name: Set root user password 
+  become: true
+  community.mysql.mysql_user:
+    name: root
+    password: "{{secret.mysql.root}}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    check_implicit_admin: yes
+    column_case_sensitive: true
+  notify: restart mysql
+
+# Then, set that password as the new default
+- name: Set default credentials for root
+  become: true
+  ansible.builtin.template:
+    src: templates/my.cnf
+    dest: /root/.my.cnf
+    mode: 0600
+    owner: root
+
+# Ansible will connect to mysql and perform actions with these credentials in future steps
+- name: Set default credentials for ansible user
+  ansible.builtin.template:
+    src: templates/my.cnf
+    dest: '{{ ansible_user_dir }}/.my.cnf'
+    mode: 0660
+    owner: '{{ ansible_user_id }}'
+
+- name: Add MySQL application users
+  community.mysql.mysql_user:
+    name: '{{ item }}'
+    password: '{{secret.mysql[item]}}'
+    priv: "{{ item }}.*:ALL"
+  with_items: '{{ mysql.users }}'
+  notify: restart mysql
+
+- name: Add MySQL Telegraf user
+  when: secret.mysql.telegraf | bool and ansible_roles
+  community.mysql.mysql_user:
+    name: telegraf
+    password: '{{secret.mysql.telegraf"]}}'
+    state: present
+    priv:
+      '*.*': 'REPLICATION CLIENT, PROCESS'
+      '`cluster\_replication`.*': SELECT
+      '`information\_schema`.*': SELECT
+      '`performance\_schema`.*': SELECT
+    resource_limits:
+      MAX_QUERIES_PER_HOUR: 0
+      MAX_CONNECTIONS_PER_HOUR: 0
+      MAX_UPDATES_PER_HOUR: 0
+      MAX_USER_CONNECTIONS: 0
+  notify: restart mysql
+
+- name: Add MySQL user for Grafana datasource
+  community.mysql.mysql_user:
+    name: grafana_ds
+    password: "{{secret.mysql.grafana_ds}}"
+    state: present
+    priv:
+      '`information\_schema`.*': SELECT
+      '`performance\_schema`.*': SELECT
+      '*.*': PROCESS
+  notify: restart mysql
+  
+- name: Create Grafana db
+  community.mysql.mysql_db:
+    name: grafana
+    state: present
+  notify: restart mysql
+  
+- name: Enable Telegraf monitoring
+  become: true
+  ansible.builtin.template:
+    src: templates/mysql.telegraf.conf
+    dest: /etc/telegraf/telegraf.d/mysql.telegraf.conf
+    mode: 0640
+    owner: telegraf
+  notify: restart telegraf

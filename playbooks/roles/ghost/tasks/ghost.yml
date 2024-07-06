@@ -7,7 +7,7 @@
     state: latest
 
 - name: Install Ghost CLI
-  include_tasks: check-installed.yml
+  import_tasks: check-installed.yml
 
 - name: Create Ghost user group
   become: true
@@ -16,15 +16,21 @@
     state: present
   register: ghost_group
 
+- name: Fix Ghost user
+  become: true
+  ansible.builtin.user:
+    name: ghost
+    state: absent
+
 - name: Create Ghost user
   become: true
   ansible.builtin.user:
     name: ghost
-    group: ghost
-    groups: www-data
+    group: www-data
+    groups: ghost
     state: present
   register: ghost_user
-
+   
 - name: Create Ghost site content dir
   become: true
   ansible.builtin.file:
@@ -50,7 +56,7 @@
 
 - name: Fix directory permissions
   become: true
-  when: ghost_install.changed
+#  when: ghost_install.changed
   ansible.builtin.file:
     path: '/var/www/{{ inventory_hostname }}/{{ item }}'
     state: directory

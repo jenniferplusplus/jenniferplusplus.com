@@ -1,9 +1,19 @@
 ---
 
 - name: Configure Ghost
-  include_tasks: ghost.yml
+  import_tasks: ghost.yml
+  tags:
+    - ghost
   
 - name: Configure Nginx proxy
-  include_tasks: nginx.yml
+  import_tasks: nginx.yml
+  tags:
+    - ghost
+    - web
 
+- name: Update Ghost
+  import_tasks: update.yml
+  tags:
+    - ghost
+    - update
 ...
