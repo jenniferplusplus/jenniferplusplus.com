@@ -1,0 +1,7 @@
+{
+  "active-version": "{{ cli_json['active-version'] }}",
+  "cli-version": "{{ cli_json['cli-version'] }}",
+  "channel": "stable",
+  "name": "{{ inventory_hostname }}",
+  "running": "production"
+}

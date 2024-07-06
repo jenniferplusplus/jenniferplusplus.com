@@ -1,0 +1,14 @@
+[Unit]
+Description=Ghost systemd service for blog: {{ inventory_hostname }}
+Documentation=https://ghost.org/docs/
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/{{ inventory_hostname }}
+User={{ ghost_user.uid }}
+Environment="NODE_ENV=production"
+ExecStart=/usr/bin/node-20 /usr/local/bin/ghost run
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -20,6 +20,11 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "jenniferplusplus"
   config.dns.patterns = [/^(?:\w+\.)*jenniferplusplus\.vagrant$/]
 
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memory = 2048
+    libvirt.cpus = 2
+  end
+
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.

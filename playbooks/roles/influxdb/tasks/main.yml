@@ -65,19 +65,20 @@
     executable: /bin/bash
 
 - name: Retrieve InfluxDB access token
+  when: secret.influxdb.accessToken is undefined
   changed_when: false
   shell: 'cat {{ ansible_user_dir }}/influxdb_default_token.json'
   register: influxdb_default_token_json
 
 - name: Set token value as fact
-  when: not secret.influxdb.accessToken | bool
+  when: secret.influxdb.accessToken is undefined
   ansible.builtin.set_fact:
     influxdb_access_token: "{{ influxdb_default_token_json.stdout | from_json | json_query('token') }}"
   delegate_to: 127.0.0.1
   run_once: true
   
 - name: Fetch token
-  when: not secret.influxdb.accessToken | bool
+  when: secret.influxdb.accessToken is undefined
   ansible.builtin.fetch:
     dest: './backup'
     src: '{{ ansible_user_dir }}/influxdb_default_token.json'

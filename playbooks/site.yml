@@ -9,9 +9,15 @@
       users:
         - 'ghost'
         - 'grafana'
-      backup:
-        - 'ghost'
   roles:
     - common
     - influxdb
     - mysql
+
+- name: Configure Ghost
+  hosts: ghost
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - common
+    - ghost

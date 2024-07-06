@@ -1,0 +1,41 @@
+- name: Install Certbot
+  ansible.builtin.dnf:
+    name:
+      - python3-certbot-nginx
+      - certbot
+    state: present
+
+- name: Register Certbot
+  when: ssl_acme_dryrun == false
+  ansible.builtin.command:
+    argv:
+      - 'certbot'
+      - 'register'
+      - '-n'
+      - '--agree-tos'
+      - '--email'
+      - '{{ ssl_acme_email }}'
+    creates: /etc/letsencrypt/accounts
+
+- name: Get certificate
+  vars:
+    cert_default_args:
+      - 'certbot'
+      - 'certonly'
+      - '-n'
+      - '--nginx'
+      - '--keep'
+      - '-d'
+      - '{{ inventory_hostname }}'
+    cert_extra_args:
+      - "{{ (ssl_acme_server != '') | ternary('--server', '') }}"
+      - "{{ (ssl_acme_server != '') | ternary(ssl_acme_server, '') }}"
+      - "{{ (ssl_acme_debug == true) | ternary('--debug', '') }}"
+      - "{{ (ssl_acme_dryrun == true) | ternary('--dry-run', '') }}"
+  ansible.builtin.command:
+    argv: '{{ cert_default_args + cert_extra_args | select | list }}'
+  args:
+    creates: '/etc/letsencrypt/live/{{ inventory_hostname }}'
+  ignore_errors: '{{ ssl_acme_dryrun == true }}'
+  notify:
+    - restart nginx

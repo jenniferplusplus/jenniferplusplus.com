@@ -29,6 +29,7 @@
     password: "{{secret.mysql.root}}"
     login_unix_socket: /var/lib/mysql/mysql.sock
     check_implicit_admin: yes
+    column_case_sensitive: true
   notify: restart mysql
 
 # Then, set that password as the new default

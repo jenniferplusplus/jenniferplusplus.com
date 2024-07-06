@@ -33,9 +33,8 @@
     state: present
   register: ansible_group
 
-- name: Reset Ansible user's session
-  ansible.builtin.meta:
-    reset_connection
+- name: Reset Ansible user's sessions
+  include_tasks: reset.yml
   when: ansible_group.changed
 
 - name: Create config dirs

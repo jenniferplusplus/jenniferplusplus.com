@@ -1,0 +1,22 @@
+---
+
+- name: Configure Nginx site
+  become: true
+  ansible.builtin.template:
+    dest: '/etc/nginx/sites-enabled/{{inventory_hostname}}.conf'
+    src: templates/nginx.conf
+    mode: 0644
+  notify:
+    - restart nginx
+
+- name: Register ports
+  become: true
+  community.general.seport:
+    ports:
+      - 2368
+    proto: tcp
+    setype: http_port_t
+    state: present
+  notify: restart nginx
+
+...

@@ -1,0 +1,19 @@
+---
+
+- name: Check if CLI installed
+  stat:
+    path: '/usr/local/bin/ghost'
+  register: ghost_cli_stat
+  
+- name: Install Ghost CLI
+  when: ghost_cli_stat.stat.exists == false
+  become: true
+  vars:
+    ansible_command_timeout: 600
+  community.general.npm:
+    name: ghost-cli
+    global: true
+    production: true
+    version: latest
+
+...

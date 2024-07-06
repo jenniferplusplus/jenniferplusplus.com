@@ -1,4 +1,9 @@
-- name: Install nodejs
-  dnf:
-    name: nodejs
-    state: latest
+---
+
+- name: Configure Ghost
+  include_tasks: ghost.yml
+  
+- name: Configure Nginx proxy
+  include_tasks: nginx.yml
+
+...
