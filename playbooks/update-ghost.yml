@@ -9,5 +9,8 @@
   tasks:
     - name: Run update
       import_tasks: roles/ghost/tasks/update.yml
+      tags:
+        - ghost
+        - update
 
 ...

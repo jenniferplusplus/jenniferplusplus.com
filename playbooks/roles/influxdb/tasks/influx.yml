@@ -80,7 +80,7 @@
 - name: Fetch token
   when: secret.influxdb.accessToken is undefined
   ansible.builtin.fetch:
-    dest: './backup'
+    dest: './export'
     src: '{{ ansible_user_dir }}/influxdb_default_token.json'
 
 

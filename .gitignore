@@ -1,6 +1,7 @@
 .vault_key
 old.yml
 backup/
+export/
 test/
 .idea/
 .vagrant/
