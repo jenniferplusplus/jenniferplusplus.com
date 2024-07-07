@@ -1,2 +1,4 @@
-users: []
-backup: []
+mysql:
+  users: []
+  backup: []
+  restore: []

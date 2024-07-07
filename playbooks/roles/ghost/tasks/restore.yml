@@ -1,0 +1,12 @@
+---
+
+- name: Restore from backup
+  become: true
+  ansible.builtin.unarchive:
+    src: '{{ ghost.restore }}/content.zip'
+    dest: '/var/www/{{ inventory_hostname }}'
+    owner: ghost
+    group: www-data
+  notify: restart ghost
+
+...
