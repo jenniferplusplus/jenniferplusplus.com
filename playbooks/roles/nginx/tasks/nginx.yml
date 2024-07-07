@@ -86,7 +86,6 @@
     mode: 0644
   with_items:
     - default.conf
-    - fedora.conf
     - status.conf
   notify:
     - restart nginx

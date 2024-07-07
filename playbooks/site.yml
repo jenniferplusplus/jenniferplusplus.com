@@ -21,3 +21,10 @@
   roles:
     - common
     - ghost
+
+- name: Configure Grafana
+  hosts: grafana
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - grafana

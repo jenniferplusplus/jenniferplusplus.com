@@ -11,3 +11,7 @@ all:
     mysql:
       hosts:
         jenniferplusplus.vagrant:
+    grafana:
+      hosts:
+        grafana.jenniferplusplus.vagrant:
+          ansible_host: jenniferplusplus.vagrant

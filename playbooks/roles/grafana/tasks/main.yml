@@ -1,0 +1,42 @@
+---
+
+- name: Add Grafana repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: Grafana repository
+    baseurl: https://rpm.grafana.com
+    gpgkey: https://rpm.grafana.com/gpg.key
+    gpgcheck: true
+    enabled: true
+  register: grafana_repo
+
+- name: Install Grafana
+  become: true
+  ansible.builtin.dnf:
+    name: grafana
+    state: latest
+    update_cache: '{{ grafana_repo.changed }}'
+  notify: restart grafana
+
+- name: configure Grafana
+  changed_when: true
+  become: true
+  ansible.builtin.template:
+    src: templates/grafana.ini
+    dest: /etc/grafana/grafana.ini
+    mode: 0640
+    owner: root
+  notify: restart grafana
+
+- name: Configure site
+  become: true
+  ansible.builtin.template:
+    dest: /etc/nginx/sites-enabled/grafana.conf
+    src: templates/nginx.conf
+    mode: 0644
+  notify:
+    - restart nginx
+
+
+...
