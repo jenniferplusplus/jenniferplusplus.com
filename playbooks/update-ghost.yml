@@ -1,0 +1,13 @@
+---
+
+- name: Update Ghost
+  hosts: ghost
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - ghost
+  tasks:
+    - name: Run update
+      import_tasks: roles/ghost/tasks/update.yml
+
+...

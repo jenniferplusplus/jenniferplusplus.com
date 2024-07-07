@@ -1,6 +1,27 @@
 # The ghost cli is really hostile to operators, actually
 # It enforces bad security, like keeping the security sensitive config file world readable
 # So, working around that
+- name: Fix directory permissions
+  become: true
+  ansible.builtin.file:
+    path: '/var/www/{{ inventory_hostname }}/{{ item }}'
+    state: directory
+    owner: ghost
+    group: www-data
+    recurse: true
+  with_items:
+    - content
+    - versions
+  
+- name: Make versions directory writable
+  become: true
+  ansible.builtin.file:
+    path: '/var/www/{{ inventory_hostname }}/versions'
+    state: directory
+    owner: ghost
+    group: www-data
+    mode: 0775
+
 - block:
   - name: Prep config for updates
     become: true

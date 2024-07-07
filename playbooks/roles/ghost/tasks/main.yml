@@ -11,9 +11,13 @@
     - ghost
     - web
 
-- name: Update Ghost
-  import_tasks: update.yml
-  tags:
+- name: Post install check for update
+  when: ghost_install.changed
+  tags: &update_tags
     - ghost
     - update
+  include_tasks:
+    file: update.yml
+    apply:
+      tags: *update_tags
 ...
