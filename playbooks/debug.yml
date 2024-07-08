@@ -1,0 +1,44 @@
+---
+
+- name: Ghost cli
+  hosts: none
+  tasks:
+
+    - name: Load cli settings
+      become: true
+      shell: 'cat /var/www/{{ inventory_hostname }}/.ghost-cli'
+      register: ghost_cli_cat
+      
+    - name: Configure Ghost site
+      become: true
+      vars:
+        cli_json: '{{ ghost_cli_cat.stdout | from_json }}'
+      debug:
+        msg: '{{ cli_json }}'
+
+
+- name: Facts
+  hosts: none
+  tasks:
+    - name: Get facts
+      setup:
+      register: setup
+    - name: Log facts
+      debug:
+        msg: '{{ setup }}'
+
+
+- name: Configure Grafana
+  hosts: none
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - grafana
+
+- name: Telegraf
+  hosts: mysql
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - mysql
+...
