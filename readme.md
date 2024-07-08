@@ -33,3 +33,5 @@ If what you're trying to test takes too long to get to, or is hard to isolate, j
 - [ ] [LinkWarden](https://github.com/linkwarden/linkwarden)
 - [ ] [Bookstack](https://www.bookstackapp.com/)
 - [ ] [Plausible](https://github.com/plausible/community-edition/)
+
+Check the `legacy` tag if you need something from the original playbooks.
