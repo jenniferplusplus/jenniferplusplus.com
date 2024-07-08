@@ -25,7 +25,7 @@
     dest: /usr/lib/systemd/system/telegraf.service
   register: telegraf_service
 
-- name: Configure standard inputs and outputs system inputs
+- name: Configure basic system monitoring
   become: true
   ansible.builtin.template:
     src: '{{ item }}'
@@ -34,7 +34,7 @@
     owner: telegraf
   notify: restart telegraf
   with_items:
-    - 'files/system.telegraf.conf'
+    - 'templates/system.telegraf.conf'
     - 'templates/influxdb.telegraf.conf'
   
 - name: Configure Telegraf agent

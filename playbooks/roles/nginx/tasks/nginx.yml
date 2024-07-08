@@ -90,11 +90,20 @@
   notify:
     - restart nginx
 
-- name: Enable Telegraf monitoring
+- name: Enable Nginx monitoring
   become: true
   ansible.builtin.template:
-    dest: /etc/telegraf/telegraf.d/nginx.telegraf.conf
+    dest: '/etc/telegraf/telegraf.d/nginx.telegraf.conf'
     src: templates/telegraf/nginx.telegraf.conf
+    owner: telegraf
+    mode: 0644
+  notify: restart telegraf
+
+- name: Enable site monitoring
+  become: true
+  ansible.builtin.template:
+    dest: '/etc/telegraf/telegraf.d/{{ inventory_hostname }}.telegraf.conf'
+    src: templates/telegraf/site.telegraf.conf
     owner: telegraf
     mode: 0644
   notify: restart telegraf

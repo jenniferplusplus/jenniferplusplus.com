@@ -75,6 +75,7 @@
   ansible.builtin.set_fact:
     influxdb_access_token: "{{ influxdb_default_token_json.stdout | from_json | json_query('token') }}"
   delegate_to: 127.0.0.1
+  delegate_facts: true
   run_once: true
   
 - name: Fetch token

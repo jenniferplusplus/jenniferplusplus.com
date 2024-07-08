@@ -54,15 +54,16 @@
     name: '{{ item }}'
     password: '{{secret.mysql[item]}}'
     priv: "{{ item }}.*:ALL"
+    column_case_sensitive: true
   with_items: '{{ mysql.users }}'
   notify: restart mysql
 
-- name: Add MySQL Telegraf user
-  when: secret.mysql.telegraf | bool and ansible_roles
+- name: Add MySQL telegraf user
   community.mysql.mysql_user:
     name: telegraf
-    password: '{{secret.mysql.telegraf"]}}'
+    password: '{{ secret.mysql.telegraf }}'
     state: present
+    column_case_sensitive: true
     priv:
       '*.*': 'REPLICATION CLIENT, PROCESS'
       '`cluster\_replication`.*': SELECT
@@ -80,6 +81,7 @@
     name: grafana_ds
     password: "{{secret.mysql.grafana_ds}}"
     state: present
+    column_case_sensitive: true
     priv:
       '`information\_schema`.*': SELECT
       '`performance\_schema`.*': SELECT
