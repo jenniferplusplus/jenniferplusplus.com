@@ -1,0 +1,121 @@
+---
+
+- name: Install nodejs
+  become: true
+  ansible.builtin.dnf:
+    name: nodejs
+    state: latest
+
+- name: Install Ghost CLI
+  import_tasks: check-installed.yml
+
+- name: Create Ghost user group
+  become: true
+  ansible.builtin.group:
+    name: ghost
+    state: present
+  register: ghost_group
+
+- name: Create Ghost user
+  become: true
+  ansible.builtin.user:
+    name: ghost
+    group: www-data
+    groups: ghost
+    state: present
+  register: ghost_user
+   
+- name: Create Ghost site content dir
+  become: true
+  ansible.builtin.file:
+    path: '/var/www/{{ inventory_hostname }}'
+    state: directory
+    owner: ghost
+    group: www-data
+    mode: 0775
+  notify: restart ghost
+
+- name: Install Ghost
+  tags:
+    - node
+  ansible.builtin.command:
+    chdir: '/var/www/{{ inventory_hostname }}'
+    creates: .ghost-cli
+    argv:
+      - ghost
+      - install
+      - "--no-setup"
+  notify: restart ghost
+  register: ghost_install
+
+- name: Configure site
+  become: true
+  ansible.builtin.template:
+    src: templates/config.production.json
+    dest: '/var/www/{{ inventory_hostname }}/config.production.json'
+    mode: 0660
+    owner: ghost
+    group: root
+  notify: restart ghost
+
+- name: Configure Ghost CLI
+  ansible.builtin.template:
+    src: templates/ghost.config
+    dest: '{{ ansible_user_dir }}/.ghost/config'
+    mode: 0644
+
+- name: Cleanup service
+  become: true
+  file:
+    path: /usr/lib/systemd/system/ghost.service
+    state: absent
+
+- name: Configure Ghost service
+  become: true
+  ansible.builtin.template:
+    src: templates/ghost.service
+    dest: '/usr/lib/systemd/system/ghost_{{ inventory_hostname }}.service'
+    mode: 0644
+  notify: restart ghost
+  
+- name: Collect metrics for Ghost service
+  become: true
+  ansible.builtin.template:
+    src: templates/ghost.telegraf.conf
+    dest: /etc/telegraf/telegraf.d/ghost.telegraf.conf
+    mode: 0644
+    owner: telegraf
+  notify: restart telegraf
+
+- name: Load site settings
+  become: true
+  shell: 'cat /var/www/{{ inventory_hostname }}/.ghost-cli'
+  register: ghost_cli_cat
+  changed_when: false
+
+- name: Fix version link
+  become: true
+  vars:
+    cli_json: '{{ ghost_cli_cat.stdout | from_json }}'
+  file:
+    path: '/var/www/{{ inventory_hostname }}/current'
+    state: link
+    src: '/var/www/{{ inventory_hostname }}/versions/{{ cli_json["active-version"] }}'
+    owner: ghost
+    group: www-data
+    follow: false
+    mode: 0775
+  notify: restart ghost
+
+- name: Configure Ghost site
+  become: true
+  vars:
+    cli_json: '{{ ghost_cli_cat.stdout | from_json }}'
+  template:
+    src: templates/ghost-cli
+    dest: '/var/www/{{ inventory_hostname }}/.ghost-cli'
+    mode: 0664
+    owner: ghost
+    group: www-data
+
+...

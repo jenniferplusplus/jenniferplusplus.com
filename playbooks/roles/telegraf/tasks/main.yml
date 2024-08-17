@@ -1,0 +1,7 @@
+---
+
+- name: Install Telegraf
+  import_tasks: telegraf.yml
+  tags:
+    - monitor
+    - telegraf

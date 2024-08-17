@@ -1,0 +1,84 @@
+---
+
+- name: Backup MySQL
+  hosts:
+    - mysql
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    mysql:
+      backup:
+        - 'ghost'
+    path: '{{ ansible_user_dir }}/backup/mysql/{{ ansible_date_time.iso8601_basic_short }}'
+  pre_tasks:
+    - name: Create backup dir
+      ansible.builtin.file:
+        path: '{{ path }}'
+        state: directory  
+  post_tasks:
+    - name: Cleanup .sql.zip
+      ansible.builtin.file:
+        path: '{{ path }}/{{ item }}.sql.zip' #'{{ ansible_user_dir }}/backup/{{ item }}.sql.{{ ansible_date_time.iso8601 }}.zip'
+        state: absent
+      with_items: '{{ mysql.backup }}'
+
+    - name: Cleanup .sql
+      ansible.builtin.file:
+        path: '{{ path }}/{{ item }}.sql'
+        state: absent
+      with_items: '{{ mysql.backup }}'
+  tasks:    
+    - name: Backup DBs
+      community.mysql.mysql_db:
+        state: dump
+        name: '{{ item }}'
+        target: '{{ path }}/{{ item }}.sql'
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        pipefail: true
+      with_items: '{{ mysql.backup }}'
+    
+    - name: Zip backup for transport
+      ansible.builtin.archive:
+        path: '{{ path }}/{{ item }}.sql'
+        dest: '{{ path }}/{{ item }}.sql.zip'
+        format: zip
+        force_archive: yes
+      with_items: '{{ mysql.backup }}'
+    
+    - name: Export backup
+      ansible.builtin.fetch:
+        dest: './backup'
+        src: '{{ path }}/{{ item }}.sql.zip'
+      with_items: '{{ mysql.backup }}'
+
+
+- name: Backup Ghost
+  hosts:
+    - ghost
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    path: '{{ ansible_user_dir }}/backup/ghost/{{ ansible_date_time.iso8601_basic_short }}'
+  pre_tasks:
+    - name: Create backup dir
+      ansible.builtin.file:
+        path: '{{ path }}'
+        state: directory
+  post_tasks:
+    - name: Cleanup
+      ansible.builtin.file:
+        path: '{{ path }}/content.zip'
+        state: absent
+  tasks:
+    - name: Backup assets
+      ansible.builtin.archive:
+        path: '/var/www/{{ inventory_hostname }}/content'
+        dest: '{{ path }}/content.zip'
+        format: zip
+
+    - name: Export backup
+      ansible.builtin.fetch:
+        dest: './backup'
+        src: '{{ path }}/content.zip'
+
+...

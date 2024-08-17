@@ -1,0 +1,23 @@
+---
+
+- name: Configure Ghost
+  import_tasks: ghost.yml
+  tags:
+    - ghost
+  
+- name: Configure Nginx proxy
+  import_tasks: nginx.yml
+  tags:
+    - ghost
+    - web
+
+- name: Post install check for update
+  when: ghost_install.changed
+  tags: &update_tags
+    - ghost
+    - update
+  include_tasks:
+    file: update.yml
+    apply:
+      tags: *update_tags
+...

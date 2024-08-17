@@ -1,0 +1,9 @@
+---
+
+- name: Install InfluxDB
+  import_tasks: influx.yml
+  tags:
+    - influx
+    - monitor
+
+...

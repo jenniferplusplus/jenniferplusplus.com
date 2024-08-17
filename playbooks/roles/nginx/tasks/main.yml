@@ -1,0 +1,17 @@
+---
+
+- name: Configure Nginx
+  include_tasks: nginx.yml
+  tags:
+    - nginx
+    - web
+
+- name: Configure SSL
+  include_role:
+    name: certbot
+  when: web_use_ssl
+  tags:
+    - ssl
+    - web
+
+...

@@ -1,0 +1,56 @@
+---
+
+- name: Add Influxdata repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: influxdata
+    description: InfluxData Repository - Stable
+    baseurl: https://repos.influxdata.com/stable/\$basearch/main
+    gpgkey: https://repos.influxdata.com/influxdata-archive_compat.key
+    gpgcheck: true
+    enabled: true
+  register: influxdata_repo
+
+- name: Install Telegraf
+  become: true
+  ansible.builtin.dnf:
+    name: telegraf
+    state: latest
+    update_cache: '{{ influxdata_repo.changed }}'
+
+- name: Configure Telegraf service
+  become: true
+  copy:
+    src: files/telegraf.service
+    dest: /usr/lib/systemd/system/telegraf.service
+  register: telegraf_service
+
+- name: Configure basic system monitoring
+  become: true
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: '/etc/telegraf/telegraf.d/{{ item | basename}}'
+    mode: 0400
+    owner: telegraf
+  notify: restart telegraf
+  with_items:
+    - 'templates/system.telegraf.conf'
+    - 'templates/influxdb.telegraf.conf'
+  
+- name: Configure Telegraf agent
+  become: true
+  ansible.builtin.copy:
+    src: files/telegraf.conf
+    dest: /etc/telegraf/telegraf.conf
+    owner: telegraf
+    mode: 0644
+  notify: restart telegraf
+  
+- name: Start Telegraf
+  when: telegraf_service.changed
+  become: true
+  ansible.builtin.systemd:
+    name: telegraf
+    state: started
+    enabled: true
+    daemon_reload: '{{ telegraf_service.changed }}'

@@ -1,0 +1,49 @@
+---
+
+- name: Restore MySQL
+  hosts:
+    - mysql
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    mysql:
+      users:
+        - 'ghost'
+      restore:
+        - 'ghost'
+    path: 'backup'
+  roles:
+    - mysql
+  pre_tasks:
+    - name: Copy backup file
+      ansible.builtin.unarchive:
+        src: '{{ path }}/{{ item }}.sql.zip'
+        dest: '{{ ansible_user_dir }}'
+      with_items: '{{ mysql.restore }}'
+  post_tasks:
+    - name: Cleanup backup file
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/{{ item }}.sql'
+        state: absent
+      with_items: '{{ mysql.restore }}'
+  tasks:
+    - name: Perform restore
+      include_tasks: 
+        file: roles/mysql/tasks/restore.yml
+
+- name: Restore Ghost
+  hosts:
+    - ghost
+  roles:
+    - ghost
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    ghost:
+      restore: 'backup'
+  tasks:
+    - name: Perform restore
+      include_tasks:
+        file: roles/ghost/tasks/restore.yml
+
+...

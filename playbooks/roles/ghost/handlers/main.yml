@@ -1,0 +1,12 @@
+---
+
+- listen: restart ghost
+  name: Restarting Ghost
+  become: true
+  ansible.builtin.systemd:
+    name: 'ghost_{{ inventory_hostname }}'
+    state: restarted
+    enabled: true
+
+...
+...

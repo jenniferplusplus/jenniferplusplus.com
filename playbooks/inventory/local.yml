@@ -1,0 +1,17 @@
+all:
+  vars:
+    site_secrets: 'local.secrets.yml'
+    ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+    ansible_user: vagrant
+    
+  children:
+    ghost:
+      hosts:
+        "jenniferplusplus.vagrant":
+    mysql:
+      hosts:
+        jenniferplusplus.vagrant:
+    grafana:
+      hosts:
+        grafana.jenniferplusplus.vagrant:
+          ansible_host: jenniferplusplus.vagrant

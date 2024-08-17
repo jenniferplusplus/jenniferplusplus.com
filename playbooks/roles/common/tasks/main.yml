@@ -1,0 +1,11 @@
+---
+
+- name: Install common utilities
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - zip
+      - unzip
+    state: latest
+
+...

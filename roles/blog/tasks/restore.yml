@@ -1,7 +1,0 @@
-- name: copy backup file
-  become: true
-  ansible.builtin.unarchive:
-    src: 'backup/{{ansible_host}}/home/ansible/{{site_name}}.content.zip'
-    dest: '/var/www/{{site_name}}'
-    group: ghost
-    owner: ghost

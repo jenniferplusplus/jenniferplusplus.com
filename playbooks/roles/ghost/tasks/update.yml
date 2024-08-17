@@ -1,0 +1,99 @@
+---
+
+# Ghost keeps the full installation for each version around on disk, and they're about 500MB each
+# So, it doesn't take all that many updates to cause problems on modestly sized disks 
+- name: Get current version
+  become: true
+  shell: 'cat /var/www/{{ inventory_hostname }}/.ghost-cli'
+  register: ghost_current_version
+  changed_when: false
+
+- name: Register older versions
+  vars:
+    current_version: '{{ ghost_current_version.stdout | from_json }}'
+  find:
+    paths: '/var/www/{{ inventory_hostname }}/versions'
+    file_type: directory
+    excludes:
+      - '{{ current_version["active-version"] }}'
+  register: ghost_older_versions
+
+- name: Remove older versions
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ ghost_older_versions['files'] }}"
+
+
+# The ghost cli is really hostile to operators, actually
+# It enforces bad security, like keeping the security sensitive config file world readable
+# So, working around that
+- name: Fix directory permissions
+  become: true
+  ansible.builtin.file:
+    path: '/var/www/{{ inventory_hostname }}/{{ item }}'
+    state: directory
+    owner: ghost
+    group: www-data
+    recurse: true
+  with_items:
+    - content
+    - versions
+  
+- name: Make versions directory writable
+  become: true
+  ansible.builtin.file:
+    path: '/var/www/{{ inventory_hostname }}/versions'
+    state: directory
+    owner: ghost
+    group: www-data
+    mode: 0775
+
+- block:
+  - name: Prep config for updates
+    become: true
+    ansible.builtin.file:
+      dest: '/var/www/{{ inventory_hostname }}/config.production.json'
+      state: file
+      mode: 0664
+      owner: ghost
+      group: root
+
+  - name: Update Ghost
+    ansible.builtin.command:
+      chdir: /var/www/{{ inventory_hostname }}
+      argv:
+        - ghost
+        - update
+        - "--no-restart"
+    notify: restart ghost
+  
+  rescue:
+    - name: run all handlers
+      meta: flush_handlers
+  
+  always:
+    - name: restore config
+      become: true
+      ansible.builtin.file:
+        dest: '/var/www/{{ inventory_hostname }}/config.production.json'
+        state: file
+        mode: 0660
+        owner: ghost
+        group: root
+      notify: restart ghost
+
+- name: Get updated version
+  become: true
+  shell: 'cat /var/www/{{ inventory_hostname }}/.ghost-cli'
+  register: ghost_updated_version
+  changed_when: false
+
+- name: Ghost version
+  vars:
+    current_version: '{{ ghost_current_version.stdout | from_json }}'
+    updated_version: '{{ ghost_updated_version.stdout | from_json }}'
+  debug:
+    msg: '{{ current_version["active-version"] }} => {{ updated_version["active-version"] }}'
+  changed_when: current_version["active-version"] != updated_version["active-version"]

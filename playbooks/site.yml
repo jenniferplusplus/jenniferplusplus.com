@@ -1,0 +1,30 @@
+---
+
+- name: Configure MySQL
+  hosts: mysql
+  vars_files:
+    - '{{ site_secrets }}'
+  vars:
+    mysql:
+      users:
+        - 'ghost'
+        - 'grafana'
+  roles:
+    - common
+    - influxdb
+    - mysql
+
+- name: Configure Ghost
+  hosts: ghost
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - common
+    - ghost
+
+- name: Configure Grafana
+  hosts: grafana
+  vars_files:
+    - '{{ site_secrets }}'
+  roles:
+    - grafana

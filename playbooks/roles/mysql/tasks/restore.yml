@@ -1,0 +1,18 @@
+---
+
+- name: Drop existing db
+  community.mysql.mysql_db:
+    name: '{{ item }}'
+    state: absent
+  with_items: '{{ mysql.restore }}'
+
+- name: Restore db from backup
+  community.mysql.mysql_db:
+    name: "{{ item }}"
+    state: import
+    target: '{{ ansible_user_dir }}/{{ item }}.sql'
+    pipefail: yes
+  with_items: '{{ mysql.restore }}'
+  notify: restart mysql
+
+...

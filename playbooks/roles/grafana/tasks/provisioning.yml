@@ -1,0 +1,27 @@
+---
+
+- name: Provision datasources
+  become: true
+  template:
+    src: 'templates/datasources.yml'
+    dest: '/etc/grafana/provisioning/datasources/'
+    owner: root
+    group: grafana
+    mode: 0640
+  notify: restart grafana
+
+- name: Provision dashboards
+  become: true
+  copy:
+    src: dashboards.yml
+    dest: /etc/grafana/provisioning/dashboards
+  notify: restart grafana
+
+- name: Configure dashboards
+  become: true
+  copy:
+    src: definitions/
+    dest: /etc/grafana/provisioning/dashboards/definitions
+  notify: restart grafana
+
+...

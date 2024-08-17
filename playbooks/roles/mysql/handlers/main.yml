@@ -1,0 +1,11 @@
+---
+
+- name: Restarting MySQL
+  become: true
+  listen: restart mysql
+  systemd:
+    name: mysqld
+    state: restarted
+    enabled: true
+
+...

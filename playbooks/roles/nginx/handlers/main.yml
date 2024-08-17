@@ -1,0 +1,11 @@
+---
+
+- name: Restarting nginx
+  listen: restart nginx
+  become: true
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: true
+    
+...

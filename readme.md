@@ -1,47 +1,37 @@
 # IAC for jenniferplusplus.com
 
-## Notes to myself
+These are mostly just notes to myself
 
-* Reminder that ansible just doesn't work on windows. Do this from WSL.
-
-Get requirements
-
-```bash
-ansible-galaxy install -r requirements.yml
+## Quickstart
+```shell
+vagrant up
 ```
 
-### How to bootstrap
-
-1. Get a new host
-2. With a sudoer user
-3. Update `prod.inventory.yml`
-4. `ssh-copy-id <user>@<host> -i /path/to/ssh/key`
-5. Then...
-
-```bash
-ansible-playbook site.yml -u <user> -K --key-file /path/to/ssh/key -i prod.inventory.yml -t bootstrap
+```shell
+vagrant dns --install # (first time only)
 ```
 
-And now you can do things as ansible
-
-### How to do other stuff
-
-1. Be properly bootstrapped. See above.
-2. Make sure you have the `.vault_key` file.
-3. Then...
-
-```bash
-ansible-playbook site.yml --vault-password-file .vault_key
-ansible-playbook site.yml --vault-password-file .vault_key -t backup,all
-ansible-playbook site.yml --vault-password-file .vault_key -t restore,all
-ansible-playbook site.yml --vault-password-file .vault_key --skip-tags never -t web
+```shell
+ansible-playbook playbooks/site.yml --vault-password-file .localkey
 ```
 
-## Todo
+## Doing other things
 
-1. ~~Backups~~
-2. ~~Ghost updates~~
-3. Monitoring
-3. Run from not my laptop (probs github actions)
-4. wiki (probs wiki.js)
-5. wiki updates
+```shell
+ansible-playbook playbooks/backup.yml --vault-password-file .localkey # take backups
+ansible-playbook playbooks/restore.yml --vault-password-file .localkey # restore a backup
+ansible-playbook playbooks/update-ghost.yml --vault-password-file .localkey # because it's so slow
+# you probably get the idea
+```
+
+If what you're trying to test takes too long to get to, or is hard to isolate, just write another playbook for it. Or do something in the debug.yml playbook.
+
+## Apps
+
+- [x] Ghost blog
+- [x] Grafana
+- [ ] [LinkWarden](https://github.com/linkwarden/linkwarden)
+- [ ] [Bookstack](https://www.bookstackapp.com/)
+- [ ] [Plausible](https://github.com/plausible/community-edition/)
+
+Check the `legacy` tag if you need something from the original playbooks.
